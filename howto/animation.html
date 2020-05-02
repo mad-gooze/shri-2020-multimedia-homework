@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test streams</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="../initVideo.js"></script>
+    <style>
+        .grid {
+            padding: 10px;
+            display: grid;
+            grid-row-gap: 10px;
+            grid-column-gap: 10px;
+            grid-template-rows: 1fr;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .grid__item {
+            width: 100%;
+            height: 47vh;
+        }
+
+        .grid__video {
+            border: 1px solid black;
+            box-sizing: border-box;
+            will-change: width, height, top, left;
+            width: 100%;
+            height: 100%;
+            transition: none;
+        }
+
+        .video_expanded {
+            transition: top 1s, left 1s, width 1s, height 1s;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="grid" id="grid">
+    <div class="grid__item">
+        <video id="video-1" class="grid__video" muted></video>
+    </div>
+    <div class="grid__item">
+        <video id="video-2" class="grid__video" muted></video>
+    </div>
+    <div class="grid__item">
+        <video id="video-3" class="grid__video" muted></video>
+    </div>
+    <div class="grid__item">
+        <video id="video-4" class="grid__video" muted></video>
+    </div>
+</div>
+
+
+<script>
+    initVideo(
+        document.getElementById('video-1'),
+        'http://localhost:9191/master?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fsosed%2Fmaster.m3u8'
+    );
+
+    initVideo(
+        document.getElementById('video-2'),
+        'http://localhost:9191/live?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fstairs%2Fmaster.m3u8'
+    );
+
+    initVideo(
+        document.getElementById('video-3'),
+        'http://localhost:9191/master?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fdog%2Fmaster.m3u8'
+    );
+
+    initVideo(
+        document.getElementById('video-4'),
+        'http://localhost:9191/live?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fstreet%2Fmaster.m3u8'
+    );
+
+</script>
+
+
+<script>
+    const grid = document.getElementById('grid');
+
+    const videos = [...document.querySelectorAll('.grid__video')];
+    videos.forEach((video) => {
+       video.addEventListener('click', () => {
+           video.classList.toggle('video_fullscreen');
+
+           const shouldGoFS = video.classList.contains('video_fullscreen');
+
+           if (shouldGoFS) {
+               const rect = video.getBoundingClientRect();
+               video.style.position = 'fixed';
+               video.style.left = rect.x + 'px';
+               video.style.top = rect.y + 'px';
+               video.style.width = rect.width + 'px';
+               video.style.height = rect.height + 'px';
+
+               // форсим reflow для перерисовки
+               video.getBoundingClientRect();
+
+               setTimeout(() => {
+                    grid.classList.toggle('grid_hidden');
+               }, 1000);
+
+               video.classList.add('video_expanded');
+               video.style.left = '0px';
+               video.style.top = '0px';
+               video.style.width = '100%';
+               video.style.height = '100%';
+           } else {
+               const gridItem = video.parentNode;
+               const rect = gridItem.getBoundingClientRect();
+
+               setTimeout(() => {
+                   video.style.position = 'static';
+                   video.classList.remove('video_expanded');
+                   grid.classList.toggle('grid_hidden');
+               }, 1000);
+
+               video.style.left = rect.x + 'px';
+               video.style.top = rect.y + 'px';
+               video.style.width = rect.width + 'px';
+               video.style.height = rect.height + 'px';
+           }
+       })
+    });
+</script>
+
+
+</body>
+</html>
